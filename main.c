@@ -9,9 +9,9 @@
 #define FALSE 0
 
 #ifdef _WIN32
-    #define CLS_STDO system("cls")
+    #define CLS system("cls")
 #else 
-    #define CLS_STDO system("clear")
+    #define CLS system("clear")
 #endif
 
 typedef int bool;
@@ -31,7 +31,7 @@ typedef struct hypotesis {
 
     struct hypotesis* next;
 } hypotesis;
-
+ 
 typedef struct most_spec_hypotesis {
     bool has_alternative;
     bool weekend;
@@ -45,20 +45,25 @@ typedef struct most_spec_hypotesis {
     bool wait;
 } most_spec_hypotesis;
 
-void training_phase(hypotesis* _hyp_head);
-void create_hypotesis_linked_list(hypotesis* _hyp_head, bool* _trained);
+void training_phase(hypotesis* _dataset_hyp_head, hypotesis* _user_hyp_head);
+void create_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained);
 void print_training_options();
 
 int main(){
-    hypotesis* hyp_head = (hypotesis*)malloc(sizeof(hypotesis));
-    hyp_head->next = NULL;
+    // Head della linked list generata dal dataset.
+    hypotesis* dataset_hyp_head = (hypotesis*)malloc(sizeof(hypotesis));
+    dataset_hyp_head->next = NULL;
+        
+    // Head della linked list di ipotesi aggiunte manualmente dall' utente.
+    hypotesis* user_hyp_head = (hypotesis*)malloc(sizeof(hypotesis));
+    user_hyp_head->next = NULL;
 
-    training_phase(hyp_head);
+    training_phase(dataset_hyp_head, user_hyp_head);
 
     return 0;
 }
 
-void training_phase(hypotesis* _hyp_head){
+void training_phase(hypotesis* _dataset_hyp_head, hypotesis* _user_hyp_head){
     char user_answer;
     int exit = 0;
     bool trained = FALSE;
@@ -72,7 +77,7 @@ void training_phase(hypotesis* _hyp_head){
         switch (user_answer){
             case '1': // Allenamento tramite dataset
                 if(trained == FALSE){ // Verifico se è gia stato esguito l' allenamento.
-                    create_hypotesis_linked_list(_hyp_head, &trained);
+                    create_dataset_hyp_linked_list(_dataset_hyp_head, &trained);
 
                     if(trained == TRUE){
                         fflush(stdout);
@@ -85,7 +90,8 @@ void training_phase(hypotesis* _hyp_head){
                 
                 } else {
                     fflush(stdout);
-                    puts("\n !! Allenamento tramite dataset gia' eseguito.\n");
+                    CLS;
+                    puts("!! Allenamento tramite dataset gia' eseguito.\n");
                     printf("Premere Invio per continuare... ");
                     fflush(stdin);
                     getchar();
@@ -94,8 +100,10 @@ void training_phase(hypotesis* _hyp_head){
                 break;
             case '2': // Inserisci un ipotesi
                 
+                
                 break;
             case '3': // Conclude training
+                // Qui devo congiungere le due liste create (quella tramite dataset e quella tramite ipotesi inserite manualmente)
                 exit = 1;
                 break;
             default:
@@ -105,7 +113,7 @@ void training_phase(hypotesis* _hyp_head){
 }
 
 void print_training_options(){
-    CLS_STDO;
+    CLS;
     printf("Find-S Algorithm (Training Phase)");
     printf("\n\nScegli un opzione:");
     printf("\n    1 - Allenami tramite dataset");
@@ -115,13 +123,13 @@ void print_training_options(){
     fflush(stdout);
 }
 
-void create_hypotesis_linked_list(hypotesis* _hyp_head, bool* _trained){
+void create_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained){
     char dataset_path[USER_BUF];
     char* row_buffer = (char*)malloc(sizeof(char)*ROW_BUF);
-    hypotesis* current_hypotesis = _hyp_head;
+    hypotesis* current_hypotesis = _dataset_hyp_head;
     size_t len;
 
-    CLS_STDO;
+    CLS;
     printf("Inserire il percorso al dataset:");
     printf("\n(main dataset path: ./dataset.csv)");
     fflush(stdout);
@@ -163,13 +171,13 @@ void create_hypotesis_linked_list(hypotesis* _hyp_head, bool* _trained){
     }
 
     /*// Stampa di prova di attributi della linked list.
-    hypotesis* aux = _hyp_head;
+    hypotesis* aux = _dataset_hyp_head;
     puts("\n");
     while(aux->next != NULL){
         printf("\n%s v", aux->restaurant_type);
         aux = aux->next;
     }*/
-    CLS_STDO;
+    CLS;
     fclose(stream_dataset);
     *_trained = TRUE;
 }
