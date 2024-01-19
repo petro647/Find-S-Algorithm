@@ -1,0 +1,5 @@
+has_alternative,has_waiting_room,is_weekend,is_hungry,how_crowded,price,is_raining,is_reserved,restaurant_type,estimated_waiting_time,do_wait
+yes,no,yes,yes,none,$$$,no,yes,italian,10-29,yes
+yes,no,yes,yes,someone,$$,no,yes,french,30-60,no
+no,no,no,no,full,$$$,yes,no,french,>60,no
+yes,yes,no,yes,someone,$,yes,no,fast_food,<10,yes
