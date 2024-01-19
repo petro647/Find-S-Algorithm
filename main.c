@@ -7,6 +7,7 @@
 #define ROW_BUF 500
 #define TRUE 1
 #define FALSE 0
+#define PAUSE printf("\nPremere Invio per continuare... "); fflush(stdin); getchar()
 
 #ifdef _WIN32
     #define CLS system("cls")
@@ -47,6 +48,7 @@ typedef struct most_spec_hypotesis {
 
 void training_phase(hypotesis* _dataset_hyp_head, hypotesis* _user_hyp_head);
 void create_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained);
+void create_user_hyp_linked_list(hypotesis* _user_hyp_head);
 void print_training_options();
 
 int main(){
@@ -81,26 +83,21 @@ void training_phase(hypotesis* _dataset_hyp_head, hypotesis* _user_hyp_head){
 
                     if(trained == TRUE){
                         fflush(stdout);
-                        puts("Allenamento tramite dataset eseguito con successo.\n");
-                        printf("Premere Invio per continuare... ");
-                        fflush(stdin);
-                        getchar();
+                        puts("Allenamento tramite dataset eseguito con successo.");
+                        PAUSE;
                         break;
                     }
                 
                 } else {
                     fflush(stdout);
                     CLS;
-                    puts("!! Allenamento tramite dataset gia' eseguito.\n");
-                    printf("Premere Invio per continuare... ");
-                    fflush(stdin);
-                    getchar();
+                    puts("!! Allenamento tramite dataset gia' eseguito.");
+                    PAUSE;
                     break;    
                 }
                 break;
             case '2': // Inserisci un ipotesi
-                
-                
+                create_user_hyp_linked_list(_user_hyp_head);
                 break;
             case '3': // Conclude training
                 // Qui devo congiungere le due liste create (quella tramite dataset e quella tramite ipotesi inserite manualmente)
@@ -145,10 +142,9 @@ void create_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained
 
     FILE* stream_dataset = fopen(dataset_path, "r");
     if(stream_dataset == NULL){
-        perror("\nNon e' stato possibile leggere il dataset");
-        printf("Premere Invio per continuare... ");
-        fflush(stdin);
-        getchar();
+        CLS;
+        perror("Non e' stato possibile leggere il dataset");
+        PAUSE;
         *_trained = FALSE;
         return;
     }
@@ -180,4 +176,13 @@ void create_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained
     CLS;
     fclose(stream_dataset);
     *_trained = TRUE;
+}
+
+void create_user_hyp_linked_list(hypotesis* _user_hyp_head){
+    char* attributi[20] = {"has_alternative", "weekend", "hungry", "crowded", "price", "raining", "reservation", "restaurant_type", "estimated_wait", "wait"};
+    CLS;
+    printf("Inserisci un ipotesi manualmente:");    
+    printf("\n\n>> ");
+
+        
 }
