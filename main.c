@@ -8,6 +8,7 @@
 #define TRUE 1
 #define FALSE 0
 #define PAUSE printf("\nPremere Invio per continuare... "); fflush(stdin); getchar()
+#define NUMB_ATTR 10
 
 #ifdef _WIN32
     #define CLS system("cls")
@@ -179,10 +180,30 @@ void create_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained
 }
 
 void create_user_hyp_linked_list(hypotesis* _user_hyp_head){
-    char* attributi[20] = {"has_alternative", "weekend", "hungry", "crowded", "price", "raining", "reservation", "restaurant_type", "estimated_wait", "wait"};
+    char user_answer[USER_BUF];
+    char all_attributes[ROW_BUF];
+    char* attributi[NUMB_ATTR] = {"has_alternative", "weekend", "hungry", "crowded", "price", "raining", "reservation", "restaurant_type", "estimated_wait", "wait"};
     CLS;
-    printf("Inserisci un ipotesi manualmente:");    
-    printf("\n\n>> ");
+    printf("Inserisci gli attributi dell' ipotesi:\n\n");
 
-        
+    // Creo una stringa contenente tutti gli attributi dell' ipotesi
+    for(int i = 0; i<NUMB_ATTR; i++){
+        fflush(stdout);
+        fflush(stdin);
+        printf("    - %s >> ", attributi[i]);
+
+        fgets(user_answer, USER_BUF-1, stdin);
+        int len = strlen(user_answer);
+        user_answer[len-1] = '\0';
+
+        if(i != 0 && i != NUMB_ATTR){
+            strcat(all_attributes, ",");
+        }
+        strcat(all_attributes,  user_answer);
+    }
+    printf("%s", all_attributes);
+
+    // Dalla stringa ottenuta creo un nuovo nodo della lista di ipotesi
+
+    PAUSE;
 }
