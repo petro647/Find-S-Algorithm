@@ -1,3 +1,6 @@
+
+// TODO: permettere all' utente di poter reinserire l'ipotesi nel caso si fosse sbagliato
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -47,7 +50,7 @@ typedef struct most_spec_hypotesis {
     bool wait;
 } most_spec_hypotesis;
 
-void training_phase(hypotesis* _dataset_hyp_head, hypotesis* _user_hyp_head);
+void training_phase(hypotesis* _dataset_hyp_head, hypotesis* _user_hyp_head, hypotesis** head_dataset_refer);
 void init_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained);
 void init_user_hyp_linked_list(hypotesis* _user_hyp_head);
 void create_node_from_string(char* _attributes_buf, hypotesis* _new_hypotesys);
@@ -63,20 +66,22 @@ int main(){
     // Head della linked list di ipotesi aggiunte manualmente dall' utente.
     hypotesis* user_hyp_head = (hypotesis*)malloc(sizeof(hypotesis));
     user_hyp_head->next = NULL;
-    training_phase(dataset_hyp_head, user_hyp_head);
+
+    PAUSE;
+    training_phase(dataset_hyp_head, user_hyp_head, &dataset_hyp_head);
     
-    /* // Stampa di prova di attributi delle ipotesi della lista
+    // Stampa di prova di attributi delle ipotesi della lista
     hypotesis* aux = dataset_hyp_head;
     while(aux != NULL){
-        printf("\nrestaurant type: %s", aux->restaurant_type);
+        printf("\nrestaurant type: %s", aux->restaurant_type );
         aux = aux->next;
     }
-    PAUSE;*/
+    PAUSE;
 
     return 0;
 }
 
-void training_phase(hypotesis* _dataset_hyp_head, hypotesis* _user_hyp_head){
+void training_phase(hypotesis* _dataset_hyp_head, hypotesis* _user_hyp_head, hypotesis** head_dataset_refer){
     char user_answer;
     int exit = 0;
     bool trained = FALSE;
@@ -112,6 +117,39 @@ void training_phase(hypotesis* _dataset_hyp_head, hypotesis* _user_hyp_head){
                 break;
             case '3': // Conclude training
                 // Qui devo congiungere le due liste create (quella tramite dataset e quella tramite ipotesi inserite manualmente)
+
+                // Elimino l' ultimo nodo della linked list del dataset (siccome è vuoto)
+                hypotesis* aux = _dataset_hyp_head;
+                hypotesis* before_aux = _dataset_hyp_head;
+                while(aux->next != NULL){
+                    before_aux = aux;
+                    aux = aux->next;
+                }
+                free(aux);
+
+                if(_dataset_hyp_head->next == NULL){ // Se non è stato usato il dataset
+                    *head_dataset_refer = _user_hyp_head;
+                }
+
+                if(_user_hyp_head->next == NULL){ // Se non sono state inserite ipotesi manualmente
+                    before_aux->next = NULL;
+                    exit = 1;
+                    break;
+                }
+
+                // Unisco le linked list del dataset e quella con ipotesi dell' utente
+                before_aux->next = _user_hyp_head;
+
+                // Elimino l' ultimo nodo della linked list delle ipotesi dell' utente (siccome è vuoto)
+                aux = _user_hyp_head;
+                before_aux = _user_hyp_head;
+                while(aux->next != NULL){
+                    before_aux = aux;
+                    aux = aux->next;
+                }
+                before_aux->next = NULL;
+                free(aux);
+
                 exit = 1;
                 break;
             default:
@@ -171,6 +209,7 @@ void create_dataset_linked_list(hypotesis* _dataset_hyp_head, FILE* _stream_data
     hypotesis* current_hypotesis = _dataset_hyp_head;
     for(int row = 0; fgets(row_buffer, ROW_BUF, _stream_dataset) != NULL; row++){ // Scorro il dataset
         hypotesis* new_node_hyp = (hypotesis*)malloc(sizeof(hypotesis));
+        new_node_hyp->next = NULL;
         if(row == 0){ // Verifico che la prima riga venga scartata
             continue;
         }
@@ -206,12 +245,12 @@ void init_user_hyp_linked_list(hypotesis* _user_hyp_head){
     aux->next = new_hypotesis;
 
     // Stampa di PROVA di tutti gli attributi "has_alternative" della linked list dello user
-    printf("\n\nStampa di has_alternative di tutti i nodi");
+    /*printf("\n\nStampa di has_alternative di tutti i nodi");
     aux = _user_hyp_head;
     while(aux->next != NULL){
         printf("\n%s", aux->has_alternative);
         aux = aux->next;
-    }
+    }*/
     PAUSE;
 }
 
@@ -219,7 +258,6 @@ void create_node_from_string(char* _attributes_buf, hypotesis* _new_hypotesys){
     fflush(stdout);
     fflush(stdin);
     sscanf(_attributes_buf, ",%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%3[^\n]", _new_hypotesys->has_alternative, _new_hypotesys->has_bar, _new_hypotesys->weekend, _new_hypotesys->hungry, _new_hypotesys->crowded, _new_hypotesys->price, _new_hypotesys->raining, _new_hypotesys->reservation, _new_hypotesys->restaurant_type, _new_hypotesys->estimated_wait, _new_hypotesys->wait);
-    printf("\n\n croww: %s", _new_hypotesys->crowded);
 }
 
 void create_string_from_input_attributes(char* _attributes_buf){
@@ -241,5 +279,4 @@ void create_string_from_input_attributes(char* _attributes_buf){
         strcat(_attributes_buf,  user_answer);
     }
     fflush(stdout);
-    printf("\n%s", _attributes_buf);
 }
