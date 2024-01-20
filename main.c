@@ -50,6 +50,7 @@ typedef struct most_spec_hypotesis {
 void training_phase(hypotesis* _dataset_hyp_head, hypotesis* _user_hyp_head);
 void create_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained);
 void init_user_hyp_linked_list(hypotesis* _user_hyp_head);
+void create_node_from_string(char* _attributes_buf, hypotesis* _new_hypotesys);
 void print_training_options();
 
 int main(){
@@ -205,14 +206,32 @@ void init_user_hyp_linked_list(hypotesis* _user_hyp_head){
     fflush(stdout);
     printf("\n%s", attributes_buf);
 
-    // Dalla stringa ottenuta creo un nuovo nodo della lista di ipotesi
-    hypotesis* new_hypotesis = (hypotesis*)malloc(sizeof(hypotesis));
+    // Inserisco il nodo in coda
+    hypotesis* aux = _user_hyp_head;
+    while(aux->next != NULL){
+        aux = aux->next;
+    }
+    create_node_from_string(attributes_buf, aux);
 
-    // 30 è la lunghezza massima dell' attributo (in questo caso specifico è sovrabbondante);
+    // Dalla stringa ottenuta creo un nuovo nodo della lista di ipotesi e lo metto in coda
+    hypotesis* new_hypotesis = (hypotesis*)malloc(sizeof(hypotesis));
+    new_hypotesis->next = NULL;
+    aux->next = new_hypotesis;
+
+    /*// Stampa di PROVA di tutti gli attributi "has_alternative" della linked list dello user
+    printf("\n\nStampa di has_alternative di tutti i nodi");
+    aux = _user_hyp_head;
+    while(aux->next != NULL){
+        printf("\n%s", aux->has_alternative);
+        aux = aux->next;
+    }
+    */
+    PAUSE;
+}
+
+void create_node_from_string(char* _attributes_buf, hypotesis* _new_hypotesys){
     fflush(stdout);
     fflush(stdin);
-    sscanf(attributes_buf, ",%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%3[^\n]", new_hypotesis->has_alternative, new_hypotesis->has_bar, new_hypotesis->weekend, new_hypotesis->hungry, new_hypotesis->crowded, new_hypotesis->price, new_hypotesis->raining, new_hypotesis->reservation, new_hypotesis->restaurant_type, new_hypotesis->estimated_wait, new_hypotesis->wait);
-    printf("\n\n croww: %s", new_hypotesis->crowded);
-
-    PAUSE;
+    sscanf(_attributes_buf, ",%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%3[^\n]", _new_hypotesys->has_alternative, _new_hypotesys->has_bar, _new_hypotesys->weekend, _new_hypotesys->hungry, _new_hypotesys->crowded, _new_hypotesys->price, _new_hypotesys->raining, _new_hypotesys->reservation, _new_hypotesys->restaurant_type, _new_hypotesys->estimated_wait, _new_hypotesys->wait);
+    printf("\n\n croww: %s", _new_hypotesys->crowded);
 }
