@@ -48,10 +48,11 @@ typedef struct most_spec_hypotesis {
 } most_spec_hypotesis;
 
 void training_phase(hypotesis* _dataset_hyp_head, hypotesis* _user_hyp_head);
-void create_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained);
+void init_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained);
 void init_user_hyp_linked_list(hypotesis* _user_hyp_head);
 void create_node_from_string(char* _attributes_buf, hypotesis* _new_hypotesys);
 void create_string_from_input_attributes(char* _attributes_buf);
+void create_dataset_linked_list(hypotesis* _dataset_hyp_head, FILE* _stream_dataset);
 void print_training_options();
 
 int main(){
@@ -62,8 +63,15 @@ int main(){
     // Head della linked list di ipotesi aggiunte manualmente dall' utente.
     hypotesis* user_hyp_head = (hypotesis*)malloc(sizeof(hypotesis));
     user_hyp_head->next = NULL;
-
     training_phase(dataset_hyp_head, user_hyp_head);
+    
+    /* // Stampa di prova di attributi delle ipotesi della lista
+    hypotesis* aux = dataset_hyp_head;
+    while(aux != NULL){
+        printf("\nrestaurant type: %s", aux->restaurant_type);
+        aux = aux->next;
+    }
+    PAUSE;*/
 
     return 0;
 }
@@ -82,7 +90,7 @@ void training_phase(hypotesis* _dataset_hyp_head, hypotesis* _user_hyp_head){
         switch (user_answer){
             case '1': // Allenamento tramite dataset
                 if(trained == FALSE){ // Verifico se è gia stato esguito l' allenamento.
-                    create_dataset_hyp_linked_list(_dataset_hyp_head, &trained);
+                    init_dataset_hyp_linked_list(_dataset_hyp_head, &trained);
 
                     if(trained == TRUE){
                         fflush(stdout);
@@ -123,10 +131,8 @@ void print_training_options(){
     fflush(stdout);
 }
 
-void create_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained){
+void init_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained){
     char dataset_path[USER_BUF];
-    char* row_buffer = (char*)malloc(sizeof(char)*ROW_BUF);
-    hypotesis* current_hypotesis = _dataset_hyp_head;
     size_t len;
 
     CLS;
@@ -153,8 +159,17 @@ void create_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained
     }
 
     // Creo la lista contenente tutto il dataset
+    create_dataset_linked_list(_dataset_hyp_head, stream_dataset);
 
-    for(int row = 0; fgets(row_buffer, ROW_BUF, stream_dataset) != NULL; row++){ // Scorro il dataset
+    CLS;
+    fclose(stream_dataset);
+    *_trained = TRUE;
+}
+
+void create_dataset_linked_list(hypotesis* _dataset_hyp_head, FILE* _stream_dataset){
+    char* row_buffer = (char*)malloc(sizeof(char)*ROW_BUF);
+    hypotesis* current_hypotesis = _dataset_hyp_head;
+    for(int row = 0; fgets(row_buffer, ROW_BUF, _stream_dataset) != NULL; row++){ // Scorro il dataset
         hypotesis* new_node_hyp = (hypotesis*)malloc(sizeof(hypotesis));
         if(row == 0){ // Verifico che la prima riga venga scartata
             continue;
@@ -166,20 +181,7 @@ void create_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained
 
         current_hypotesis->next = new_node_hyp;
         current_hypotesis = new_node_hyp;
-
-        // printf("\n%s", row_buffer);
     }
-
-    /*// Stampa di prova di attributi della linked list.
-    hypotesis* aux = _dataset_hyp_head;
-    puts("\n");
-    while(aux->next != NULL){
-        printf("\n%s v", aux->restaurant_type);
-        aux = aux->next;
-    }*/
-    CLS;
-    fclose(stream_dataset);
-    *_trained = TRUE;
 }
 
 void init_user_hyp_linked_list(hypotesis* _user_hyp_head){
