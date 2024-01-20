@@ -8,7 +8,7 @@
 #define TRUE 1
 #define FALSE 0
 #define PAUSE printf("\nPremere Invio per continuare... "); fflush(stdin); getchar()
-#define NUMB_ATTR 10
+#define NUMB_ATTR 11
 
 #ifdef _WIN32
     #define CLS system("cls")
@@ -49,7 +49,7 @@ typedef struct most_spec_hypotesis {
 
 void training_phase(hypotesis* _dataset_hyp_head, hypotesis* _user_hyp_head);
 void create_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained);
-void create_user_hyp_linked_list(hypotesis* _user_hyp_head);
+void init_user_hyp_linked_list(hypotesis* _user_hyp_head);
 void print_training_options();
 
 int main(){
@@ -98,7 +98,7 @@ void training_phase(hypotesis* _dataset_hyp_head, hypotesis* _user_hyp_head){
                 }
                 break;
             case '2': // Inserisci un ipotesi
-                create_user_hyp_linked_list(_user_hyp_head);
+                init_user_hyp_linked_list(_user_hyp_head);
                 break;
             case '3': // Conclude training
                 // Qui devo congiungere le due liste create (quella tramite dataset e quella tramite ipotesi inserite manualmente)
@@ -157,6 +157,7 @@ void create_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained
         if(row == 0){ // Verifico che la prima riga venga scartata
             continue;
         }
+
         // Memorizzazione attributi nel relativo nodo
         // 30 è la lunghezza massima dell' attributo (in questo caso specifico è sovrabbondante);
         sscanf(row_buffer, "%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%3[^\n]", current_hypotesis->has_alternative, current_hypotesis->has_bar, current_hypotesis->weekend, current_hypotesis->hungry, current_hypotesis->crowded, current_hypotesis->price, current_hypotesis->raining, current_hypotesis->reservation, current_hypotesis->restaurant_type, current_hypotesis->estimated_wait, current_hypotesis->wait);
@@ -179,10 +180,10 @@ void create_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained
     *_trained = TRUE;
 }
 
-void create_user_hyp_linked_list(hypotesis* _user_hyp_head){
+void init_user_hyp_linked_list(hypotesis* _user_hyp_head){
     char user_answer[USER_BUF];
-    char all_attributes[ROW_BUF];
-    char* attributi[NUMB_ATTR] = {"has_alternative", "weekend", "hungry", "crowded", "price", "raining", "reservation", "restaurant_type", "estimated_wait", "wait"};
+    char attributes_buf[ROW_BUF] = {','};
+    char* attributi[NUMB_ATTR] = {"has_alternative", "bar", "weekend", "hungry", "crowded", "price", "raining", "reservation", "restaurant_type", "estimated_wait", "wait"};
     CLS;
     printf("Inserisci gli attributi dell' ipotesi:\n\n");
 
@@ -194,16 +195,24 @@ void create_user_hyp_linked_list(hypotesis* _user_hyp_head){
 
         fgets(user_answer, USER_BUF-1, stdin);
         int len = strlen(user_answer);
-        user_answer[len-1] = '\0';
+        user_answer[len-1] = '\0'; // Perchè l'ultimo carattere acquisito era '\n'
 
         if(i != 0 && i != NUMB_ATTR){
-            strcat(all_attributes, ",");
+            strcat(attributes_buf, ",");
         }
-        strcat(all_attributes,  user_answer);
+        strcat(attributes_buf,  user_answer);
     }
-    printf("%s", all_attributes);
+    fflush(stdout);
+    printf("\n%s", attributes_buf);
 
     // Dalla stringa ottenuta creo un nuovo nodo della lista di ipotesi
+    hypotesis* new_hypotesis = (hypotesis*)malloc(sizeof(hypotesis));
+
+    // 30 è la lunghezza massima dell' attributo (in questo caso specifico è sovrabbondante);
+    fflush(stdout);
+    fflush(stdin);
+    sscanf(attributes_buf, ",%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%3[^\n]", new_hypotesis->has_alternative, new_hypotesis->has_bar, new_hypotesis->weekend, new_hypotesis->hungry, new_hypotesis->crowded, new_hypotesis->price, new_hypotesis->raining, new_hypotesis->reservation, new_hypotesis->restaurant_type, new_hypotesis->estimated_wait, new_hypotesis->wait);
+    printf("\n\n croww: %s", new_hypotesis->crowded);
 
     PAUSE;
 }
