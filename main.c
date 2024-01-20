@@ -51,6 +51,7 @@ void training_phase(hypotesis* _dataset_hyp_head, hypotesis* _user_hyp_head);
 void create_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained);
 void init_user_hyp_linked_list(hypotesis* _user_hyp_head);
 void create_node_from_string(char* _attributes_buf, hypotesis* _new_hypotesys);
+void create_string_from_input_attributes(char* _attributes_buf);
 void print_training_options();
 
 int main(){
@@ -182,29 +183,13 @@ void create_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained
 }
 
 void init_user_hyp_linked_list(hypotesis* _user_hyp_head){
-    char user_answer[USER_BUF];
     char attributes_buf[ROW_BUF] = {','};
-    char* attributi[NUMB_ATTR] = {"has_alternative", "bar", "weekend", "hungry", "crowded", "price", "raining", "reservation", "restaurant_type", "estimated_wait", "wait"};
+
     CLS;
     printf("Inserisci gli attributi dell' ipotesi:\n\n");
 
     // Creo una stringa contenente tutti gli attributi dell' ipotesi
-    for(int i = 0; i<NUMB_ATTR; i++){
-        fflush(stdout);
-        fflush(stdin);
-        printf("    - %s >> ", attributi[i]);
-
-        fgets(user_answer, USER_BUF-1, stdin);
-        int len = strlen(user_answer);
-        user_answer[len-1] = '\0'; // Perchè l'ultimo carattere acquisito era '\n'
-
-        if(i != 0 && i != NUMB_ATTR){
-            strcat(attributes_buf, ",");
-        }
-        strcat(attributes_buf,  user_answer);
-    }
-    fflush(stdout);
-    printf("\n%s", attributes_buf);
+    create_string_from_input_attributes(attributes_buf);
 
     // Inserisco il nodo in coda
     hypotesis* aux = _user_hyp_head;
@@ -218,14 +203,13 @@ void init_user_hyp_linked_list(hypotesis* _user_hyp_head){
     new_hypotesis->next = NULL;
     aux->next = new_hypotesis;
 
-    /*// Stampa di PROVA di tutti gli attributi "has_alternative" della linked list dello user
+    // Stampa di PROVA di tutti gli attributi "has_alternative" della linked list dello user
     printf("\n\nStampa di has_alternative di tutti i nodi");
     aux = _user_hyp_head;
     while(aux->next != NULL){
         printf("\n%s", aux->has_alternative);
         aux = aux->next;
     }
-    */
     PAUSE;
 }
 
@@ -234,4 +218,26 @@ void create_node_from_string(char* _attributes_buf, hypotesis* _new_hypotesys){
     fflush(stdin);
     sscanf(_attributes_buf, ",%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%3[^\n]", _new_hypotesys->has_alternative, _new_hypotesys->has_bar, _new_hypotesys->weekend, _new_hypotesys->hungry, _new_hypotesys->crowded, _new_hypotesys->price, _new_hypotesys->raining, _new_hypotesys->reservation, _new_hypotesys->restaurant_type, _new_hypotesys->estimated_wait, _new_hypotesys->wait);
     printf("\n\n croww: %s", _new_hypotesys->crowded);
+}
+
+void create_string_from_input_attributes(char* _attributes_buf){
+    char user_answer[USER_BUF];
+    char* attributi[NUMB_ATTR] = {"has_alternative", "bar", "weekend", "hungry", "crowded", "price", "raining", "reservation", "restaurant_type", "estimated_wait", "wait"};
+
+    for(int i = 0; i<NUMB_ATTR; i++){
+        fflush(stdout);
+        fflush(stdin);
+        printf("    - %s >> ", attributi[i]);
+
+        fgets(user_answer, USER_BUF-1, stdin);
+        int len = strlen(user_answer);
+        user_answer[len-1] = '\0'; // Perchè l'ultimo carattere acquisito era '\n'
+
+        if(i != 0 && i != NUMB_ATTR){
+            strcat(_attributes_buf, ",");
+        }
+        strcat(_attributes_buf,  user_answer);
+    }
+    fflush(stdout);
+    printf("\n%s", _attributes_buf);
 }
