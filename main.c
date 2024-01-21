@@ -1,6 +1,3 @@
-
-// TODO: permettere all' utente di poter reinserire l'ipotesi nel caso si fosse sbagliato
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -54,7 +51,7 @@ void training_phase(hypotesis* _dataset_hyp_head, hypotesis* _user_hyp_head, hyp
 void init_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained);
 void init_user_hyp_linked_list(hypotesis* _user_hyp_head);
 void create_node_from_string(char* _attributes_buf, hypotesis* _new_hypotesys);
-void create_string_from_input_attributes(char* _attributes_buf);
+int create_string_from_input_attributes(char* _attributes_buf);
 void create_dataset_linked_list(hypotesis* _dataset_hyp_head, FILE* _stream_dataset);
 void print_training_options();
 
@@ -67,11 +64,10 @@ int main(){
     hypotesis* user_hyp_head = (hypotesis*)malloc(sizeof(hypotesis));
     user_hyp_head->next = NULL;
 
-    PAUSE;
     training_phase(dataset_hyp_head, user_hyp_head, &dataset_hyp_head);
     
     // Stampa di prova di attributi delle ipotesi della lista
-    hypotesis* aux = dataset_hyp_head;
+    hypotesis* aux = user_hyp_head;
     while(aux != NULL){
         printf("\nrestaurant type: %s", aux->restaurant_type );
         aux = aux->next;
@@ -225,12 +221,18 @@ void create_dataset_linked_list(hypotesis* _dataset_hyp_head, FILE* _stream_data
 
 void init_user_hyp_linked_list(hypotesis* _user_hyp_head){
     char attributes_buf[ROW_BUF] = {','};
+    int is_string_created;
 
     CLS;
     printf("Inserisci gli attributi dell' ipotesi:\n\n");
 
     // Creo una stringa contenente tutti gli attributi dell' ipotesi
-    create_string_from_input_attributes(attributes_buf);
+    is_string_created = create_string_from_input_attributes(attributes_buf);
+    if(!is_string_created) {
+        attributes_buf[0] = ',';
+        attributes_buf[1] = '\0';
+        return;
+    }
 
     // Inserisco il nodo in coda
     hypotesis* aux = _user_hyp_head;
@@ -260,9 +262,10 @@ void create_node_from_string(char* _attributes_buf, hypotesis* _new_hypotesys){
     sscanf(_attributes_buf, ",%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%30[^,],%3[^\n]", _new_hypotesys->has_alternative, _new_hypotesys->has_bar, _new_hypotesys->weekend, _new_hypotesys->hungry, _new_hypotesys->crowded, _new_hypotesys->price, _new_hypotesys->raining, _new_hypotesys->reservation, _new_hypotesys->restaurant_type, _new_hypotesys->estimated_wait, _new_hypotesys->wait);
 }
 
-void create_string_from_input_attributes(char* _attributes_buf){
+ // Restituisce un intero positivo se è stata creata la stringa correttamente, 0 altrimenti
+int create_string_from_input_attributes(char* _attributes_buf){
     char user_answer[USER_BUF];
-    char* attributi[NUMB_ATTR] = {"has_alternative", "bar", "weekend", "hungry", "crowded", "price", "raining", "reservation", "restaurant_type", "estimated_wait", "wait"};
+    char* attributi[NUMB_ATTR] = {"has_alternative (yes/no)", "bar (yes/no)", "weekend (yes/no)", "hungry (yes/no)", "crowded (none/someone/full)", "price ($/$$/$$$)", "raining (yes/no)", "reservation (yes/no)", "restaurant_type (french/italian/thai/fast_food)", "estimated_wait (<10/10-29/30-60/>60)", "wait (yes/no)"};
 
     for(int i = 0; i<NUMB_ATTR; i++){
         fflush(stdout);
@@ -279,4 +282,11 @@ void create_string_from_input_attributes(char* _attributes_buf){
         strcat(_attributes_buf,  user_answer);
     }
     fflush(stdout);
+    printf("I dati inseriti sono corretti? (yes/no) >> ");
+    fgets(user_answer, USER_BUF, stdin);
+    if(strcmp(user_answer, "yes\n") == 0){
+        return 1;
+    } else {
+        return 0;
+    }
 }
