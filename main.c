@@ -54,6 +54,10 @@ void create_node_from_string(char* _attributes_buf, hypotesis* _new_hypotesys);
 int create_string_from_input_attributes(char* _attributes_buf);
 void create_dataset_linked_list(hypotesis* _dataset_hyp_head, FILE* _stream_dataset);
 void print_training_options();
+void testing_phase(hypotesis* _dataset_hyp_head);
+void do_test(hypotesis* _dataset_hyp_head);
+void compare_hypotesis(hypotesis* current_node, char _hypotesis_to_calculate[][30]);
+void compare_attributes(char* attribute, int attribute_position, char _hypotesis_to_calculate[][30]);
 
 int main(){
     // Head della linked list generata dal dataset.
@@ -65,14 +69,7 @@ int main(){
     user_hyp_head->next = NULL;
 
     training_phase(dataset_hyp_head, user_hyp_head, &dataset_hyp_head);
-    
-    // Stampa di prova di attributi delle ipotesi della lista
-    hypotesis* aux = user_hyp_head;
-    while(aux != NULL){
-        printf("\nrestaurant type: %s", aux->restaurant_type );
-        aux = aux->next;
-    }
-    PAUSE;
+    testing_phase(dataset_hyp_head);
 
     return 0;
 }
@@ -126,7 +123,6 @@ void training_phase(hypotesis* _dataset_hyp_head, hypotesis* _user_hyp_head, hyp
                 if(_dataset_hyp_head->next == NULL){ // Se non è stato usato il dataset
                     *head_dataset_refer = _user_hyp_head;
                 }
-
                 if(_user_hyp_head->next == NULL){ // Se non sono state inserite ipotesi manualmente
                     before_aux->next = NULL;
                     exit = 1;
@@ -161,6 +157,16 @@ void print_training_options(){
     printf("\n    1 - Allenami tramite dataset");
     printf("\n    2 - Inserisci un ipotesi");
     printf("\n    3 - Concludi sessione di training\n"); 
+
+    fflush(stdout);
+}
+
+void print_testing_options(){
+    CLS;
+    printf("Find-S Algorithm (Testing Phase)");
+    printf("\n\nScegli un opzione:");
+    printf("\n    1 - Prova l'algoritmo con ipotesi da calcolare");
+    printf("\n    2 - Esci dal programma\n"); 
 
     fflush(stdout);
 }
@@ -223,9 +229,6 @@ void init_user_hyp_linked_list(hypotesis* _user_hyp_head){
     char attributes_buf[ROW_BUF] = {','};
     int is_string_created;
 
-    CLS;
-    printf("Inserisci gli attributi dell' ipotesi:\n\n");
-
     // Creo una stringa contenente tutti gli attributi dell' ipotesi
     is_string_created = create_string_from_input_attributes(attributes_buf);
     if(!is_string_created) {
@@ -266,6 +269,9 @@ void create_node_from_string(char* _attributes_buf, hypotesis* _new_hypotesys){
 int create_string_from_input_attributes(char* _attributes_buf){
     char user_answer[USER_BUF];
     char* attributi[NUMB_ATTR] = {"has_alternative (yes/no)", "bar (yes/no)", "weekend (yes/no)", "hungry (yes/no)", "crowded (none/someone/full)", "price ($/$$/$$$)", "raining (yes/no)", "reservation (yes/no)", "restaurant_type (french/italian/thai/fast_food)", "estimated_wait (<10/10-29/30-60/>60)", "wait (yes/no)"};
+    
+    CLS;
+    printf("Inserisci gli attributi dell' ipotesi:\n\n");
 
     for(int i = 0; i<NUMB_ATTR; i++){
         fflush(stdout);
@@ -288,5 +294,84 @@ int create_string_from_input_attributes(char* _attributes_buf){
         return 1;
     } else {
         return 0;
+    }
+}
+
+void testing_phase(hypotesis* _dataset_hyp_head){
+    char user_answer;
+    int exit = 0;
+    do{
+        print_testing_options();
+        printf("\n>> ");
+        fflush(stdin);
+        user_answer = getchar();
+
+        switch (user_answer){
+            case '1': // Testa il modello.
+                CLS;
+                do_test(_dataset_hyp_head);
+                break;
+            case '2': // Esci dal programma.
+                exit = 1;
+                break;
+            default:
+                break;
+        }
+    } while(exit != 1);
+
+}
+
+void do_test(hypotesis* _dataset_hyp_head){
+    char attributes_buf[ROW_BUF] = {','};
+    char hypotesis_to_calculate[][30] = { "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" }; // 10 campi da comparare
+    int is_string_created = create_string_from_input_attributes(attributes_buf);
+    if(!is_string_created) {
+        attributes_buf[0] = ',';
+        attributes_buf[1] = '\0';
+        return;
+    }
+
+    // Per fare la comparazione dei singoli campi delle strutture del dataset con quelli della stringa intanto devo estrarre i campi singolarmente dalle strutture, e poi avendo l' intero della loro posizione in memoria sapro gia con quale compararli
+
+    hypotesis* aux = _dataset_hyp_head;
+    printf("\n");
+    while(aux != NULL){
+        if(strcmp(aux->wait, "yes") == 0){
+            // printf("%s", aux->restaurant_type);
+            compare_hypotesis(aux, hypotesis_to_calculate);
+        }
+        aux = aux->next;
+    }
+
+    printf("\nIpotesi piu generale: ");
+    for(int i = 0; i<10; i++){
+        printf("\nattributo: %s", hypotesis_to_calculate[i]);
+    }
+    PAUSE;
+}
+
+// Comparazione tra ipotesi.
+void compare_hypotesis(hypotesis* current_node, char _hypotesis_to_calculate[][30]){
+    compare_attributes(current_node->has_alternative, 0, _hypotesis_to_calculate);
+    compare_attributes(current_node->has_bar, 1, _hypotesis_to_calculate);
+    compare_attributes(current_node->weekend, 2, _hypotesis_to_calculate);
+    compare_attributes(current_node->hungry, 3, _hypotesis_to_calculate);
+    compare_attributes(current_node->crowded, 4, _hypotesis_to_calculate);
+    compare_attributes(current_node->price, 5, _hypotesis_to_calculate);
+    compare_attributes(current_node->raining, 6, _hypotesis_to_calculate);
+    compare_attributes(current_node->reservation, 7, _hypotesis_to_calculate);
+    compare_attributes(current_node->restaurant_type, 8, _hypotesis_to_calculate);
+    compare_attributes(current_node->estimated_wait, 9, _hypotesis_to_calculate);
+}
+
+// Comparazione dei singoli attributi dell' ipotesi.
+void compare_attributes(char* attribute, int attribute_position, char _hypotesis_to_calculate[][30]){
+    if(strcmp(_hypotesis_to_calculate[attribute_position], "0") == 0){
+        strcpy(_hypotesis_to_calculate[attribute_position], attribute);
+    } else {
+        int are_equal = strcmp(attribute, _hypotesis_to_calculate[attribute_position]);
+        if(are_equal != 0){
+            strcpy(_hypotesis_to_calculate[attribute_position], "?");
+        }
     }
 }
