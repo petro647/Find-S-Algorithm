@@ -395,5 +395,3 @@ void compare_attributes(char* attribute, int attribute_position, char _hypotesis
         }
     }
 }
-
-// TODO: risposta secca all' utente se conviene aspettare oppure no.
