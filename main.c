@@ -331,9 +331,21 @@ void do_test(hypotesis* _dataset_hyp_head){
         return;
     }
 
-    // Per fare la comparazione dei singoli campi delle strutture del dataset con quelli della stringa intanto devo estrarre i campi singolarmente dalle strutture, e poi avendo l' intero della loro posizione in memoria sapro gia con quale compararli
+    // TODO: inserire l' ipotesi di test in coda alla lista delle ipotesi totali.
+    hypotesis* user_test_hypotesis = (hypotesis*)malloc(sizeof(hypotesis));
+    user_test_hypotesis->next = NULL;
+    create_node_from_string(attributes_buf, user_test_hypotesis);
 
     hypotesis* aux = _dataset_hyp_head;
+    while(aux->next != NULL){
+        aux = aux->next;
+    }
+
+    aux->next = user_test_hypotesis;
+
+    // Per fare la comparazione dei singoli campi delle strutture del dataset con quelli della stringa intanto devo estrarre i campi singolarmente dalle strutture, e poi avendo l' intero della loro posizione in memoria sapro gia con quale compararli
+
+    aux = _dataset_hyp_head;
     printf("\n");
     while(aux != NULL){
         if(strcmp(aux->wait, "yes") == 0){
