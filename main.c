@@ -190,6 +190,8 @@ void init_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained){
     }
 
     FILE* stream_dataset = fopen(dataset_path, "r");
+
+    // Gestione errore
     if(stream_dataset == NULL){
         CLS;
         perror("Non e' stato possibile leggere il dataset");
@@ -206,6 +208,7 @@ void init_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained){
     *_trained = TRUE;
 }
 
+// Creo la linked list soltanto con le ipotesi gia presenti nel dataset.
 void create_dataset_linked_list(hypotesis* _dataset_hyp_head, FILE* _stream_dataset){
     char* row_buffer = (char*)malloc(sizeof(char)*ROW_BUF);
     hypotesis* current_hypotesis = _dataset_hyp_head;
@@ -248,14 +251,6 @@ void init_user_hyp_linked_list(hypotesis* _user_hyp_head){
     hypotesis* new_hypotesis = (hypotesis*)malloc(sizeof(hypotesis));
     new_hypotesis->next = NULL;
     aux->next = new_hypotesis;
-
-    // Stampa di PROVA di tutti gli attributi "has_alternative" della linked list dello user
-    /*printf("\n\nStampa di has_alternative di tutti i nodi");
-    aux = _user_hyp_head;
-    while(aux->next != NULL){
-        printf("\n%s", aux->has_alternative);
-        aux = aux->next;
-    }*/
     PAUSE;
 }
 
@@ -285,7 +280,7 @@ int create_string_from_input_attributes(char* _attributes_buf){
         if(i != 0 && i != NUMB_ATTR){
             strcat(_attributes_buf, ",");
         }
-        strcat(_attributes_buf,  user_answer);
+        strcat(_attributes_buf,  user_answer); // Concateno in _attributes_buf tutti gli attributi formando una singola stringa
     }
     fflush(stdout);
     printf("I dati inseriti sono corretti? (yes/no) >> ");
@@ -331,16 +326,15 @@ void do_test(hypotesis* _dataset_hyp_head){
         return;
     }
 
-    // TODO: inserire l' ipotesi di test in coda alla lista delle ipotesi totali.
     hypotesis* user_test_hypotesis = (hypotesis*)malloc(sizeof(hypotesis));
     user_test_hypotesis->next = NULL;
     create_node_from_string(attributes_buf, user_test_hypotesis);
 
+    // Aggiungo l' ipotesi di test dell'utente in coda alla linked list totale.
     hypotesis* aux = _dataset_hyp_head;
     while(aux->next != NULL){
         aux = aux->next;
     }
-
     aux->next = user_test_hypotesis;
 
     // Per fare la comparazione dei singoli campi delle strutture del dataset con quelli della stringa intanto devo estrarre i campi singolarmente dalle strutture, e poi avendo l' intero della loro posizione in memoria sapro gia con quale compararli
@@ -356,8 +350,22 @@ void do_test(hypotesis* _dataset_hyp_head){
     }
 
     printf("\nIpotesi piu generale: ");
+    int any = 0;
+    int matched = 0;
     for(int i = 0; i<10; i++){
+        if(strcmp(hypotesis_to_calculate[i], "?") == 0){
+            any++;
+        } else {
+            matched++;
+        }
         printf("\nattributo: %s", hypotesis_to_calculate[i]);
+    }
+    // printf("\nany: %d, matched: %d", any, matched);
+
+    if(any > matched){
+        printf("\nRESULT: Conviene aspettare? NO");
+    } else {
+        printf("\nRESULT: Conviene aspettare? SI");
     }
     PAUSE;
 }
@@ -387,3 +395,5 @@ void compare_attributes(char* attribute, int attribute_position, char _hypotesis
         }
     }
 }
+
+// TODO: risposta secca all' utente se conviene aspettare oppure no.
