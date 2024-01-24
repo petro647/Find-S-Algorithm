@@ -399,8 +399,6 @@ void do_test(hypotesis* _dataset_hyp_head){
     PAUSE;
 }
 
-// TODO: impedire che venga inserito il wait nella fase di tesing siccome va calcolato dall' algoritmo.
-
 // Comparazione tra ipotesi.
 void compare_hypotesis(hypotesis* current_node, char _hypotesis_to_calculate[][30]){
     compare_attributes(current_node->has_alternative, 0, _hypotesis_to_calculate);
