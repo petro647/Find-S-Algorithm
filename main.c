@@ -51,7 +51,7 @@ void training_phase(hypotesis* _dataset_hyp_head, hypotesis* _user_hyp_head, hyp
 void init_dataset_hyp_linked_list(hypotesis* _dataset_hyp_head, bool* _trained);
 void init_user_hyp_linked_list(hypotesis* _user_hyp_head);
 void create_node_from_string(char* _attributes_buf, hypotesis* _new_hypotesys);
-int create_string_from_input_attributes(char* _attributes_buf);
+int create_string_from_input_attributes(char* _attributes_buf, int is_testing_phase);
 void create_dataset_linked_list(hypotesis* _dataset_hyp_head, FILE* _stream_dataset);
 void print_training_options();
 void testing_phase(hypotesis* _dataset_hyp_head);
@@ -233,7 +233,7 @@ void init_user_hyp_linked_list(hypotesis* _user_hyp_head){
     int is_string_created;
 
     // Creo una stringa contenente tutti gli attributi dell' ipotesi
-    is_string_created = create_string_from_input_attributes(attributes_buf);
+    is_string_created = create_string_from_input_attributes(attributes_buf, 0);
     if(!is_string_created) {
         attributes_buf[0] = ',';
         attributes_buf[1] = '\0';
@@ -261,14 +261,19 @@ void create_node_from_string(char* _attributes_buf, hypotesis* _new_hypotesys){
 }
 
  // Restituisce un intero positivo se è stata creata la stringa correttamente, 0 altrimenti
-int create_string_from_input_attributes(char* _attributes_buf){
+int create_string_from_input_attributes(char* _attributes_buf, int is_testing_phase){
     char user_answer[USER_BUF];
     char* attributi[NUMB_ATTR] = {"has_alternative (yes/no)", "bar (yes/no)", "weekend (yes/no)", "hungry (yes/no)", "crowded (none/someone/full)", "price ($/$$/$$$)", "raining (yes/no)", "reservation (yes/no)", "restaurant_type (french/italian/thai/fast_food)", "estimated_wait (<10/10-29/30-60/>60)", "wait (yes/no)"};
     
     CLS;
     printf("Inserisci gli attributi dell' ipotesi:\n\n");
 
-    for(int i = 0; i<NUMB_ATTR; i++){
+    int numb_attr = NUMB_ATTR;
+    if(is_testing_phase == 1){
+        numb_attr--;
+    }
+
+    for(int i = 0; i<numb_attr; i++){
         fflush(stdout);
         fflush(stdin);
         printf("    - %s >> ", attributi[i]);
@@ -277,10 +282,14 @@ int create_string_from_input_attributes(char* _attributes_buf){
         int len = strlen(user_answer);
         user_answer[len-1] = '\0'; // Perchè l'ultimo carattere acquisito era '\n'
 
-        if(i != 0 && i != NUMB_ATTR){
+        if(i != 0 && i != numb_attr){
             strcat(_attributes_buf, ",");
         }
         strcat(_attributes_buf,  user_answer); // Concateno in _attributes_buf tutti gli attributi formando una singola stringa
+    }
+    if(is_testing_phase == 1){
+        strcat(_attributes_buf, ",");
+        strcat(_attributes_buf,  "yes");
     }
     fflush(stdout);
     printf("I dati inseriti sono corretti? (yes/no) >> ");
@@ -319,7 +328,10 @@ void testing_phase(hypotesis* _dataset_hyp_head){
 void do_test(hypotesis* _dataset_hyp_head){
     char attributes_buf[ROW_BUF] = {','};
     char hypotesis_to_calculate[][30] = { "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" }; // 10 campi da comparare
-    int is_string_created = create_string_from_input_attributes(attributes_buf);
+    int is_string_created = create_string_from_input_attributes(attributes_buf, 1);
+    int any = 0;
+    int matched = 0;
+    char user_answer[USER_BUF];
     if(!is_string_created) {
         attributes_buf[0] = ',';
         attributes_buf[1] = '\0';
@@ -349,26 +361,45 @@ void do_test(hypotesis* _dataset_hyp_head){
         aux = aux->next;
     }
 
-    printf("\nIpotesi piu generale: ");
-    int any = 0;
-    int matched = 0;
+    printf("\nIpotesi piu specifica possibile: ");
+
     for(int i = 0; i<10; i++){
         if(strcmp(hypotesis_to_calculate[i], "?") == 0){
             any++;
         } else {
             matched++;
         }
-        printf("\nattributo: %s", hypotesis_to_calculate[i]);
+        printf("\na%d: %s", i, hypotesis_to_calculate[i]);
     }
     // printf("\nany: %d, matched: %d", any, matched);
 
     if(any > matched){
         printf("\nRESULT: Conviene aspettare? NO");
+        sscanf("no,", "%2[^,]", user_test_hypotesis->wait);
     } else {
         printf("\nRESULT: Conviene aspettare? SI");
+        sscanf("yes,", "%3[^,]", user_test_hypotesis->wait);
     }
+
+    printf("\nIl risultato ottenuto e' corretto? (yes/no) >> ");
+    fflush(stdin);
+    fgets(user_answer, USER_BUF-1, stdin);
+
+    if(strcmp(user_answer, "no\n") == 0){
+        // Inverto l' esito.
+        if(strcmp(user_test_hypotesis->wait, "yes") == 0){
+            sscanf("no,", "%2[^,]", user_test_hypotesis->wait);
+            printf("\nHo cambiato l'esito in: %s", user_test_hypotesis->wait);
+        } else {
+            sscanf("yes,", "%3[^,]", user_test_hypotesis->wait);
+            printf("\nHo cambiato l'esito in: %s", user_test_hypotesis->wait);
+        }
+    }
+
     PAUSE;
 }
+
+// TODO: impedire che venga inserito il wait nella fase di tesing siccome va calcolato dall' algoritmo.
 
 // Comparazione tra ipotesi.
 void compare_hypotesis(hypotesis* current_node, char _hypotesis_to_calculate[][30]){
